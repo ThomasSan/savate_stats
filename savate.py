@@ -25,14 +25,20 @@ def get_book_stats(data_sheet, red, blue):
 								blue_boxer = current.cell(y, z).value
 								# print "blue " + blue_boxer
 							if place == 2:
+								forfait = 0
 								winner = current.cell(y, z).value
-								if winner.find(red_boxer) > -1:
+								if winner.lower().find('forfait') > -1:
+									forfait = 1
+								elif winner.find(red_boxer) > -1:
 									red = red + 1
 									# print "red"
-								else:
+								elif winner.find(blue_boxer) > -1:
 									blue = blue + 1
 									# print "blue"
-								print "WINNER " + current.cell(y, z).value + '\n'
+								if forfait > 0:
+									print "Forfait\n"
+								else:
+									print "WINNER " + current.cell(y, z).value + '\n'
 								# print "=> BLUE " + str(blue) + "/ =>RED " + str(red) + '\n'
 							# print "cell(" + str(y) + "," + str(z) + ") = " + current.cell(y, z).value
 							place = place + 1
