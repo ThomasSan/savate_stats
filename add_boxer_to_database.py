@@ -16,6 +16,7 @@ def get_registered_page(data_sheet):
 		current = data_sheet.sheet_by_index(x)
 		if re.search("inscrit", current.name.lower()):
 			return current
+	return data_sheet.sheet_by_index(0)
 
 def insert_boxers(data_sheet):
 	registered = get_registered_page(data_sheet)
@@ -39,7 +40,7 @@ def insert_boxers(data_sheet):
 		if registered.cell_type(x,weight) == 1:
 			user['weight'] = registered.cell_value(x,weight).strip()
 			user['dep'] = int(registered.cell_value(x,dep))
-			user['name'] = registered.cell_value(x,name).strip().lower()
+			user['name'] = re.sub("\s+", " ", registered.cell_value(x,name).strip().lower())
 			user['gym'] = regex.sub('', registered.cell_value(x,gym).strip().lower())
 			users.update(user, user, upsert=True)
 
@@ -69,15 +70,22 @@ def insert_matches(data_sheet, file):
 								fight['blue'] = current.cell(y, z).value.strip().lower()
 							if place == 2:
 								forfait = 0
+								ko = 0
 								winner = current.cell(y, z).value
 								if winner.lower().find('forfait') > -1:
 									forfait = 1
+								if winner.lower().find('h.c') > -1:
+									ko = 1
+								if winner.lower().find('combat') > -1:
+									ko = 1
 								if winner.find(red_boxer) > -1:
 									fight['winner'] = 'red'
 								if winner.find(blue_boxer) > -1:
 									fight['winner'] = 'blue'
 								if forfait > 0:
 									fight['victory'] = 'forfait'
+								elif ko == 1:
+									fight['victory'] = 'ko'
 								else:
 									fight['victory'] = 'decision'
 								if 'winner' in fight:
@@ -90,7 +98,7 @@ def insert_matches(data_sheet, file):
 
 os.chdir("data")
 
-for file in glob.glob("*.xls"):
+for file in glob.glob("*.xls*"):
 	print("File ", file)
 	data_sheet = xlrd.open_workbook(file)
 	insert_boxers(data_sheet)
