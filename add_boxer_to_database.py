@@ -38,7 +38,13 @@ def insert_boxers(data_sheet):
 	for x in range(2, registered.nrows):
 		user = {}
 		if registered.cell_type(x,weight) == 1:
-			user['weight'] = registered.cell_value(x,weight).strip()
+			user['weight'] = registered.cell_value(x,weight).strip()[:3]
+			if re.search("[a-zA-Z][0-9]{2}", user['weight']):
+				user['weight'] = user['weight']
+			else:
+				user['weight'] = 'N/C'
+			if user['weight'] == "M15" or user['weight'] == "F10":
+				user['weight'] += "0"
 			user['dep'] = int(registered.cell_value(x,dep))
 			user['name'] = re.sub("\s+", " ", registered.cell_value(x,name).strip().lower())
 			user['gym'] = regex.sub('', registered.cell_value(x,gym).strip().lower())
@@ -64,10 +70,10 @@ def insert_matches(data_sheet, file):
 						if type(current.cell(y, z).value) is not float and re.search('[a-zA-Z]{1,}\s{1}[a-zA-Z]*', current.cell(y, z).value):
 							if place == 0:
 								red_boxer = current.cell(y, z).value
-								fight['red'] = current.cell(y, z).value.strip().lower()
+								fight['red'] = re.sub("\s+", " ", current.cell(y, z).value.strip().lower())
 							if place == 1:
 								blue_boxer = current.cell(y, z).value
-								fight['blue'] = current.cell(y, z).value.strip().lower()
+								fight['blue'] = re.sub("\s+", " ", current.cell(y, z).value.strip().lower())
 							if place == 2:
 								forfait = 0
 								ko = 0
@@ -89,7 +95,9 @@ def insert_matches(data_sheet, file):
 								else:
 									fight['victory'] = 'decision'
 								if 'winner' in fight:
-									fight['cat'] = current.name
+									fight['cat'] = current.name[:3]
+									if fight['cat'] == "M15" or  fight['cat'] == "F10":
+										fight['cat'] += "0"
 									fight['type'] = get_match_types(current.cell(0,0).value.lower())
 									fight['competition'] = regex.sub('', current.cell_value(0,0).strip().lower())
 									fights.update(fight, fight, upsert=True)
